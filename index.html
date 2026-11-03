@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Трекер зарплаты — продажи курсов</title>
+  <meta name="theme-color" content="#0d2b2a">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1 class="brand">Зарплата отдела продаж</h1>
+    <div class="top-right">
+      <div class="month" role="group" aria-label="Выбор месяца">
+        <button type="button" class="icon-btn" id="prevMonth" aria-label="Предыдущий месяц">‹</button>
+        <input type="month" id="monthInput" aria-label="Месяц">
+        <button type="button" class="icon-btn" id="nextMonth" aria-label="Следующий месяц">›</button>
+      </div>
+      <button type="button" class="logout" id="logoutBtn">Выйти</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ЛЕВАЯ КОЛОНКА: расчётный листок и KPI -->
+    <section class="col-left">
+      <article class="slip" aria-labelledby="slipTitle">
+        <h2 id="slipTitle" class="slip-title">Расчётный листок <span id="slipMonth"></span></h2>
+
+        <div class="slip-total">
+          <span class="slip-label">Всего за месяц</span>
+          <strong class="slip-big" id="totalAll">0 ₽</strong>
+        </div>
+
+        <div class="tear" aria-hidden="true"></div>
+
+        <div class="slip-parts">
+          <div class="part">
+            <h3>Аванс (1–15 числа)</h3>
+            <p class="part-sum" id="sumAdvance">0 ₽</p>
+            <dl class="rows">
+              <div><dt>Часть оклада</dt><dd id="advSalary">0 ₽</dd></div>
+              <div><dt>Новые клиенты</dt><dd id="advNew">0 ₽</dd></div>
+              <div><dt>Продления</dt><dd id="advOld">0 ₽</dd></div>
+            </dl>
+          </div>
+          <div class="part">
+            <h3>Остаток (16–конец месяца)</h3>
+            <p class="part-sum" id="sumSecond">0 ₽</p>
+            <dl class="rows">
+              <div><dt>Часть оклада</dt><dd id="secSalary">0 ₽</dd></div>
+              <div><dt>Новые клиенты</dt><dd id="secNew">0 ₽</dd></div>
+              <div><dt>Продления</dt><dd id="secOld">0 ₽</dd></div>
+              <div><dt>Бонус KPI</dt><dd id="secKpi">0 ₽</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="slip-foot">
+          <span>Продано новым: <b id="soldNew">0 ₽</b></span>
+          <span>Продления: <b id="soldOld">0 ₽</b></span>
+        </div>
+      </article>
+
+      <article class="card" aria-labelledby="kpiTitle">
+        <h2 id="kpiTitle">KPI: выполнение плана</h2>
+        <div id="kpiNew" class="kpi"></div>
+        <div id="kpiOld" class="kpi"></div>
+        <p class="kpi-bonus" id="kpiBonus"></p>
+      </article>
+
+      <details class="card settings" id="settingsBox">
+        <summary>Настройки месяца: оклад, планы, бонус, проценты</summary>
+        <form id="settingsForm" class="grid-form" novalidate>
+          <label>Оклад, ₽
+            <input type="number" inputmode="decimal" min="0" step="any" name="salary">
+          </label>
+          <label>Какая часть оклада идёт в аванс, %
+            <input type="number" inputmode="decimal" min="0" max="100" step="any" name="advShare">
+          </label>
+          <label>План по новым, ₽
+            <input type="number" inputmode="decimal" min="0" step="any" name="planNew">
+          </label>
+          <label>План по продлениям, ₽
+            <input type="number" inputmode="decimal" min="0" step="any" name="planOld">
+          </label>
+          <label class="full">Бонус KPI (один общий, за выполнение всех планов), ₽
+            <input type="number" inputmode="decimal" min="0" step="any" name="bonus">
+          </label>
+          <label>% с нового клиента
+            <input type="number" inputmode="decimal" min="0" step="any" name="rateNew">
+          </label>
+          <label>% с продления
+            <input type="number" inputmode="decimal" min="0" step="any" name="rateOld">
+          </label>
+          <p class="hint full">Настройки действуют на выбранный месяц и автоматически переходят на следующие. Прошлые месяцы не пересчитываются.</p>
+          <button type="submit" class="btn primary full">Сохранить настройки</button>
+        </form>
+      </details>
+    </section>
+
+    <!-- ПРАВАЯ КОЛОНКА: ввод и список -->
+    <section class="col-right">
+      <article class="card" aria-labelledby="addTitle">
+        <h2 id="addTitle">Новая оплата</h2>
+        <form id="addForm" class="add-form" novalidate>
+          <label class="full">Фамилия клиента
+            <input type="text" name="name" autocomplete="off" placeholder="Например, Иванова" required>
+          </label>
+          <label>Сколько заплатил, ₽
+            <input type="number" inputmode="decimal" min="0" step="any" name="amount" placeholder="25000" required>
+          </label>
+          <label>Дата оплаты
+            <input type="date" name="date" required>
+          </label>
+          <fieldset class="full seg">
+            <legend>Клиент</legend>
+            <label class="seg-item"><input type="radio" name="type" value="new" checked><span>Новый</span></label>
+            <label class="seg-item"><input type="radio" name="type" value="old"><span>Старый (продление)</span></label>
+          </fieldset>
+          <p class="error full" id="addError" role="alert" hidden></p>
+          <button type="submit" class="btn primary full">Сохранить</button>
+        </form>
+      </article>
+
+      <article class="card" aria-labelledby="listTitle">
+        <div class="list-head">
+          <h2 id="listTitle">Клиенты за месяц <span class="count" id="listCount"></span></h2>
+          <input type="search" id="search" placeholder="Поиск по фамилии" aria-label="Поиск по фамилии">
+        </div>
+        <ul class="clients" id="clientList"></ul>
+        <p class="empty" id="emptyState" hidden>В этом месяце оплат пока нет. Добавьте первую в форме выше.</p>
+      </article>
+
+      <article class="card" aria-labelledby="dataTitle">
+        <h2 id="dataTitle">Месячная выгрузка</h2>
+        <div class="btn-row">
+          <button type="button" class="btn primary" id="exportCsv">Скачать месяц в CSV (Excel)</button>
+        </div>
+        <p class="hint">В файле все оплаты выбранного месяца и итоги: оклад, проценты, бонус, аванс, остаток и сумма за месяц.</p>
+      </article>
+    </section>
+  </main>
+
+  <!-- Окно редактирования -->
+  <div class="modal" id="editModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <h2 id="editTitle">Изменить клиента</h2>
+      <form id="editForm" class="add-form" novalidate>
+        <input type="hidden" name="id">
+        <label class="full">Фамилия клиента
+          <input type="text" name="name" autocomplete="off" required>
+        </label>
+        <label>Сколько заплатил, ₽
+          <input type="number" inputmode="decimal" min="0" step="any" name="amount" required>
+        </label>
+        <label>Дата оплаты
+          <input type="date" name="date" required>
+        </label>
+        <fieldset class="full seg">
+          <legend>Клиент</legend>
+          <label class="seg-item"><input type="radio" name="etype" value="new"><span>Новый</span></label>
+          <label class="seg-item"><input type="radio" name="etype" value="old"><span>Старый (продление)</span></label>
+        </fieldset>
+        <p class="error full" id="editError" role="alert" hidden></p>
+        <div class="btn-row full">
+          <button type="submit" class="btn primary">Сохранить</button>
+          <button type="button" class="btn" id="editCancel">Отмена</button>
+          <button type="button" class="btn danger push" id="editDelete">Удалить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Вход -->
+  <div class="modal auth" id="authBox">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <h2 id="authTitle">Вход в трекер</h2>
+      <form id="authForm" class="auth-form" novalidate>
+        <label>Почта
+          <input type="email" name="email" autocomplete="username" inputmode="email" required>
+        </label>
+        <label>Пароль (от 6 символов)
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <p class="error" id="authError" role="alert" hidden></p>
+        <button type="submit" class="btn primary" id="loginBtn">Войти</button>
+        <button type="button" class="btn" id="signupBtn">Создать аккаунт</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
