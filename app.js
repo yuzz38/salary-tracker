@@ -339,27 +339,15 @@
   function csvNum(v) { return String(Math.round(v * 100) / 100).replace('.', ','); }
 
   $('exportCsv').addEventListener('click', function () {
-    var r = calc(month), s = r.s;
-    var rows = [['Дата', 'Фамилия', 'Тип клиента', 'Сумма оплаты', 'Ставка, %', 'Начислено мне', 'Период']];
-    r.list.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (c) {
-      var d = c.date.split('-');
-      rows.push([d[2] + '.' + d[1] + '.' + d[0], c.name, c.type === 'new' ? 'Новый' : 'Продление',
-        csvNum(c.amount), csvNum(c.type === 'new' ? s.rateNew : s.rateOld), csvNum(clientPay(c, s)),
-        +d[2] <= 15 ? 'Аванс' : 'Остаток']);
+    var r = calc(month);
+    var rows = [['Фамилия', 'Новый', 'Старый']];
+    r.list.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).forEach(function (c) {
+      rows.push([
+        c.name,
+        c.type === 'new' ? csvNum(c.amount) : '',
+        c.type === 'old' ? csvNum(c.amount) : ''
+      ]);
     });
-    rows.push([]);
-    rows.push(['ИТОГО ЗА ' + monthTitle(month).toUpperCase()]);
-    rows.push(['Продано новым', csvNum(r.sold.new)]);
-    rows.push(['План по новым', csvNum(s.planNew)]);
-    rows.push(['Продано продлений', csvNum(r.sold.old)]);
-    rows.push(['План по продлениям', csvNum(s.planOld)]);
-    rows.push(['Оклад', csvNum(s.salary)]);
-    rows.push(['Процент с новых', csvNum(r.pay[1].new + r.pay[2].new)]);
-    rows.push(['Процент с продлений', csvNum(r.pay[1].old + r.pay[2].old)]);
-    rows.push(['Бонус KPI', csvNum(r.kpi)]);
-    rows.push(['Аванс (1–15)', csvNum(r.advance)]);
-    rows.push(['Остаток (16–конец)', csvNum(r.second)]);
-    rows.push(['Всего за месяц', csvNum(r.total)]);
     var text = '\ufeff' + rows.map(function (row) { return row.map(csvCell).join(';'); }).join('\r\n');
     var blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
